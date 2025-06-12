@@ -91,6 +91,13 @@ const config = {
           "0%, 100%": { transform: "scale(1)" },
           "50%": { transform: "scale(1.03)" },
         },
+        "wave-motion": {
+          "0%": { transform: "translateX(0px) scaleX(1)" },
+          "25%": { transform: "translateX(-3px) scaleX(0.98)" },
+          "50%": { transform: "translateX(0px) scaleX(1.02)" },
+          "75%": { transform: "translateX(3px) scaleX(0.98)" },
+          "100%": { transform: "translateX(0px) scaleX(1)" },
+        },
         // アイデア2改: 常時微細エフェクト
         "faint-ripple": {
           "0%, 100%": { transform: "scale(0.8)", opacity: "0.03" },
@@ -109,6 +116,7 @@ const config = {
         "text-distort": "text-distort 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards",
         "subtle-breathing-opacity": "subtle-breathing-opacity 7s ease-in-out infinite",
         "subtle-breathing-scale": "subtle-breathing-scale 9s ease-in-out infinite",
+        "wave-motion": "wave-motion 3s ease-in-out infinite",
         // アイデア2改: 常時微細エフェクト
         "faint-ripple": "faint-ripple 12s ease-in-out infinite",
         "gentle-glow": "gentle-glow 9s ease-in-out infinite alternate",
