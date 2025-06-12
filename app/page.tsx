@@ -304,7 +304,8 @@ export default function HomePage() {
                   { label: "会社名", value: "株式会社Lab K9" },
                   { label: "住所", value: "〒530-0001 大阪府大阪市北区梅田1-1-3 大阪駅前第3ビル 29階" },
                   { label: "代表取締役", value: "木村 翼" },
-                  { label: "取引先実績", value: "神戸市、NTTデータ、JR西日本、他多数" },
+                  { label: "取引先実績", value: "NTTデータ、artience株式会社、SCOグループ、広告代理店、映像制作会社、ECアパレル企業、建設企業、東大松尾研発AIスタートアップ、他多数" },
+                  { label: "連絡先", value: "info[at]lab-k9.com（[at]を@に変換してお送りください）" },
                 ].map((item) => (
                   <li key={item.label} className="flex flex-col sm:flex-row">
                     <span className="w-full sm:w-1/3 font-semibold text-gray-800 mb-1 sm:mb-0">{item.label}</span>
