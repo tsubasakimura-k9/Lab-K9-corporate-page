@@ -3,7 +3,7 @@
 import type React from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useEffect, useState, useRef, useCallback, useMemo } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { InteractiveCard } from "./components/interactive-card" // 新しいコンポーネントをインポート
 
 interface NavLinkProps {
@@ -35,7 +35,7 @@ interface SectionTitleProps {
 
 const SectionTitle: React.FC<SectionTitleProps> = ({ children }) => (
   <div className="flex flex-col items-center justify-center mb-12 md:mb-16">
-    <div className="w-20 h-px bg-[#B08D57] mb-4 animate-subtle-breathing-opacity" />
+    <div className="w-20 h-px bg-[#B08D57] mb-4 animate-wave-motion opacity-100" />
     <h2 className="text-3xl md:text-4xl font-semibold text-black text-center">{children}</h2>
   </div>
 )
@@ -45,24 +45,43 @@ const LiquidIntelligenceElement: React.FC = () => {
   const [isMounted, setIsMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 })
+  const [mouseClientY, setMouseClientY] = useState<number>(window.innerHeight / 2)
+  const [belowHero, setBelowHero] = useState(false)
   const [orientation, setOrientation] = useState({ beta: 90, gamma: 0 })
-  const [emphasizedEffects, setEmphasizedEffects] = useState<string[]>([])
+
+  const [autoAnimate, setAutoAnimate] = useState(false)
 
   const backgroundRef = useRef<HTMLDivElement>(null)
   const lastAcceleration = useRef({ x: 0, y: 0, z: 0, timestamp: Date.now() })
 
+  // 各波線ごとのランダムパラメータ（初回マウント時に固定）
+  const waveParamsRef = useRef<{ ampFactor: number; freqFactor: number; yOffset: number; speedFactor: number; opacity: number }[]>([])
+  if (waveParamsRef.current.length === 0) {
+    waveParamsRef.current = Array.from({ length: 8 }).map(() => ({
+      ampFactor: 0.5 + Math.random() * 0.5, // 0.5〜1.0 倍 (現状をMAXとする)
+      freqFactor: 0.9 + Math.random() * 0.3, // 0.9〜1.2 倍
+      yOffset: Math.random() * 6 - 3,        // -3〜+3 px
+      speedFactor: 0.6 + Math.random() * 1.4, // 0.6〜2.0 倍
+      opacity: 0.2 + Math.random() * 0.4,     // 0.2〜0.6
+    }))
+  }
+
   useEffect(() => {
     setIsMounted(true)
-    const checkIsMobile = /Mobi|Android/i.test(navigator.userAgent)
-    setIsMobile(checkIsMobile)
+    const mobile = /Mobi|Android/i.test(navigator.userAgent)
+    setIsMobile(mobile)
+    // 波線は常に自動アニメーション
+    setAutoAnimate(true)
   }, [])
 
-  const handleMouseMove = useCallback((event: MouseEvent) => {
-    setMousePosition({
-      x: (event.clientX / window.innerWidth) * 100,
-      y: (event.clientY / window.innerHeight) * 100,
-    })
-  }, [])
+  const handleMouseMove = (event: MouseEvent) => {
+    const xPercent = (event.clientX / window.innerWidth) * 100
+    const yPercent = (event.clientY / window.innerHeight) * 100
+    setMousePosition({ x: xPercent, y: yPercent })
+    setMouseClientY(event.clientY)
+    const docY = event.clientY + window.scrollY
+    setBelowHero(docY > window.innerHeight)
+  }
 
   const handleDeviceOrientation = useCallback((event: DeviceOrientationEvent) => {
     if (event.beta !== null && event.gamma !== null) {
@@ -82,17 +101,19 @@ const LiquidIntelligenceElement: React.FC = () => {
         const deltaZ = Math.abs((z || 0) - lastAcceleration.current.z)
         const totalDelta = deltaX + deltaY + deltaZ
 
+        // パーティクル削除により、エフェクト処理は不要
         if (totalDelta > 12) {
-          const effectId = `emphasis-${Date.now()}`
-          setEmphasizedEffects((prev) => [...prev, effectId])
-          setTimeout(() => {
-            setEmphasizedEffects((prev) => prev.filter((id) => id !== effectId))
-          }, 1500)
+          // 今後のエフェクト拡張用に閾値チェックは残す
         }
         lastAcceleration.current = { x: x || 0, y: y || 0, z: z || 0, timestamp: now }
       }
     }
   }, [])
+
+  const handleScroll = () => {
+    const docY = mouseClientY + window.scrollY
+    setBelowHero(docY > window.innerHeight)
+  }
 
   useEffect(() => {
     if (!isMounted) return
@@ -120,6 +141,8 @@ const LiquidIntelligenceElement: React.FC = () => {
       window.addEventListener("mousemove", handleMouseMove)
     }
 
+    window.addEventListener("scroll", handleScroll)
+
     return () => {
       if (isMobile) {
         window.removeEventListener("deviceorientation", handleDeviceOrientation)
@@ -127,88 +150,98 @@ const LiquidIntelligenceElement: React.FC = () => {
       } else {
         window.removeEventListener("mousemove", handleMouseMove)
       }
+      window.removeEventListener("scroll", handleScroll)
     }
   }, [isMounted, isMobile, handleMouseMove, handleDeviceOrientation, handleDeviceMotion])
 
-  const gradX = isMobile ? 50 + (orientation.gamma / 90) * 25 : mousePosition.x
-  const gradY = isMobile ? 50 + ((orientation.beta - 90) / 90) * 25 : mousePosition.y
+  // gradX, gradYの自動アニメーション
+  const [autoAnimTick, setAutoAnimTick] = useState(0)
+  useEffect(() => {
+    if (autoAnimate) {
+      const interval = setInterval(() => setAutoAnimTick(t => t + 1), 50)
+      return () => clearInterval(interval)
+    }
+  }, [autoAnimate])
+  
+  const gradX = isMobile
+    ? autoAnimate
+      ? 50 + Math.sin(autoAnimTick / 40) * 20
+      : 50 + (orientation.gamma / 90) * 25
+    : mousePosition.x
+  const gradY = isMobile
+    ? autoAnimate
+      ? 50 + Math.cos(autoAnimTick / 60) * 20
+      : 50 + ((orientation.beta - 90) / 90) * 25
+    : mousePosition.y
 
-  const backgroundStyle: React.CSSProperties = {
-    backgroundImage: `
-      radial-gradient(circle at ${gradX}% ${gradY}%, rgba(100, 100, 120, 0.25) 0%, transparent 45%),
-      radial-gradient(circle at ${100 - gradX}% ${100 - gradY}%, rgba(120, 120, 140, 0.2) 0%, transparent 55%)
-    `,
-    backgroundSize: "150% 150%, 200% 200%",
-    backgroundRepeat: "no-repeat",
-    transition: "background-image 0.2s ease-out",
+  // 有機的なうねりを持つ波線を生成
+  const createOrganicWavePath = (
+    baseAmp: number,
+    freq: number,
+    phase: number,
+    yBase: number,
+  ) => {
+    const pts: string[] = []
+    for (let x = -60; x <= 260; x += 2) {
+      // 振幅にゆらぎを加える
+      const ampMod = baseAmp * 0.4 * Math.sin(((x + phase) * 0.15 * Math.PI) / 180)
+      // 追加の高周波成分で微細なゆらぎを与える
+      const jitter = baseAmp * 0.15 * Math.sin(((x + phase * 0.3) * 0.6 * Math.PI) / 180)
+      const y = yBase + (baseAmp + ampMod) * Math.sin(((x + phase) * freq * Math.PI) / 180) + jitter
+      pts.push(`${x},${y}`)
+    }
+    return `M ${pts.join(" L ")}`
   }
 
-  const particles = useMemo(() => {
-    if (!isMounted) return []
-    const numParticles = 20
-    return Array.from({ length: numParticles }).map((_, i) => {
-      const size = Math.random() * 3 + 1.5
-      const duration = Math.random() * 8 + 10
-      const delay = Math.random() * -duration
-      const left = Math.random() * 95 + 2.5
-      const top = Math.random() * 95 + 2.5
-      const animationName = Math.random() > 0.5 ? "animate-faint-ripple" : "animate-gentle-glow"
-      return (
-        <div
-          key={`particle-${i}`}
-          className={`absolute rounded-full ${animationName}`}
-          style={{
-            width: `${size}px`,
-            height: `${size}px`,
-            left: `${left}%`,
-            top: `${top}%`,
-            animationDuration: `${duration}s`,
-            animationDelay: `${delay}s`,
-            backgroundColor: `rgba(180, 180, 200, ${Math.random() * 0.35 + 0.25})`,
-            zIndex: 1,
-          }}
-        />
-      )
-    })
-  }, [isMounted])
-
-  const emphasizedParticleElements = emphasizedEffects.map((id) => {
-    const size = Math.random() * 60 + 40
-    const left = Math.random() * 70 + 15
-    const top = Math.random() * 70 + 15
-    return (
-      <div
-        key={id}
-        className="absolute rounded-full opacity-0"
-        style={{
-          width: `${size}px`,
-          height: `${size}px`,
-          left: `${left}%`,
-          top: `${top}%`,
-          background: `radial-gradient(circle, rgba(220, 220, 255, 0.4) 0%, transparent 70%)`,
-          animation: `gentle-glow 1.5s ease-out forwards, faint-ripple 1.5s ease-out forwards`,
-          transform: `scale(${Math.random() * 0.5 + 0.8})`,
-          zIndex: 2,
-        }}
-      />
-    )
-  })
+  // アニメーション用のフェーズを更新（左右にゆったり流れる）
+  const phase = autoAnimTick
 
   if (!isMounted) {
     return <div className="fixed inset-0 z-0 bg-gray-100" />
   }
 
   return (
-    <div ref={backgroundRef} className="fixed inset-0 z-0 overflow-hidden" style={backgroundStyle}>
-      {particles}
-      {emphasizedParticleElements}
+    <div ref={backgroundRef} className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
       <div
-        className="absolute inset-[20%] rounded-full animate-subtle-breathing-scale opacity-5"
+        className="absolute inset-0 animate-subtle-breathing-scale pointer-events-none"
         style={{
-          background: "radial-gradient(circle, rgba(200,200,200,0.04) 0%, transparent 70%)",
+          background: `radial-gradient(circle at ${gradX}% ${gradY}%, ${belowHero ? "rgba(59,130,246,0.28)" : "rgba(255,217,102,0.25)"} 0%, ${belowHero ? "rgba(59,130,246,0.12)" : "rgba(255,217,102,0.1)"} 40%, transparent 75%)`,
+          opacity: 0.8,
+          transition: "background-position 0.05s linear",
           zIndex: 0,
         }}
       />
+
+      <svg
+        className="absolute top-48 left-0 w-full h-44 overflow-visible"
+        viewBox="-60 0 320 100"
+        preserveAspectRatio="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {Array.from({ length: 8 }).map((_, i) => {
+          const param = waveParamsRef.current[i]
+          // 振幅を 50% に縮小
+          const amplitudeBase = (30 + i * 0.6) * 0.5
+          const amplitude = amplitudeBase * param.ampFactor
+          const frequencyBase = 0.35 + i * 0.018
+          const frequency = frequencyBase * param.freqFactor
+          // 振幅を小さくした分だけ下方向へずらし、最下部の位置をキープ
+          const yBase = 20 + i * 4.5 + param.yOffset + amplitude
+          const phaseLine = phase * param.speedFactor + i * 45
+          const d = createOrganicWavePath(amplitude, frequency, phaseLine, yBase)
+          return (
+            <path
+              key={i}
+              d={d}
+              stroke="#FFD966"
+              strokeWidth={0.5}
+              fill="none"
+              strokeLinecap="round"
+              opacity={param.opacity}
+            />
+          )
+        })}
+      </svg>
     </div>
   )
 }
@@ -306,7 +339,7 @@ export default function HomePage() {
                   { label: "会社名", value: "株式会社Lab K9" },
                   { label: "住所", value: "〒530-0001 大阪府大阪市北区梅田1-1-3 大阪駅前第3ビル 29階" },
                   { label: "代表取締役", value: "木村 翼" },
-                  { label: "取引先実績", value: "NTTデータ、artience株式会社、SCOグループ、広告代理店、映像制作会社、ECアパレル企業、建設企業、東大松尾研発AIスタートアップ、他多数" },
+                  { label: "取引先実績", value: "NTTデータ、artience、SCOグループ、広告代理店、映像制作会社、ECアパレル企業、建設企業、東大松尾研発AIスタートアップ、他多数" },
                   { label: "連絡先", value: "info[at]lab-k9.com（[at]を@に変換してお送りください）" },
                 ].map((item) => (
                   <li key={item.label} className="flex flex-col sm:flex-row">
