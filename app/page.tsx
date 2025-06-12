@@ -68,20 +68,21 @@ const LiquidIntelligenceElement: React.FC = () => {
 
   useEffect(() => {
     setIsMounted(true)
-    const mobile = /Mobi|Android/i.test(navigator.userAgent)
+    const mobile = typeof navigator !== "undefined" ? /Mobi|Android/i.test(navigator.userAgent) : false
     setIsMobile(mobile)
     // 波線は常に自動アニメーション
     setAutoAnimate(true)
   }, [])
 
-  const handleMouseMove = (event: MouseEvent) => {
+  const handleMouseMove = useCallback((event: MouseEvent) => {
+    if (typeof window === "undefined") return
     const xPercent = (event.clientX / window.innerWidth) * 100
     const yPercent = (event.clientY / window.innerHeight) * 100
     setMousePosition({ x: xPercent, y: yPercent })
     setMouseClientY(event.clientY)
     const docY = event.clientY + window.scrollY
     setBelowHero(docY > window.innerHeight)
-  }
+  }, [])
 
   const handleDeviceOrientation = useCallback((event: DeviceOrientationEvent) => {
     if (event.beta !== null && event.gamma !== null) {
@@ -110,13 +111,14 @@ const LiquidIntelligenceElement: React.FC = () => {
     }
   }, [])
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
+    if (typeof window === "undefined") return
     const docY = mouseClientY + window.scrollY
     setBelowHero(docY > window.innerHeight)
-  }
+  }, [mouseClientY])
 
   useEffect(() => {
-    if (!isMounted) return
+    if (!isMounted || typeof window === "undefined") return
 
     const requestDeviceMotionPermission = async () => {
       if (typeof (DeviceMotionEvent as any).requestPermission === "function") {
@@ -152,7 +154,7 @@ const LiquidIntelligenceElement: React.FC = () => {
       }
       window.removeEventListener("scroll", handleScroll)
     }
-  }, [isMounted, isMobile, handleMouseMove, handleDeviceOrientation, handleDeviceMotion])
+  }, [isMounted, isMobile, handleMouseMove, handleDeviceOrientation, handleDeviceMotion, handleScroll])
 
   // gradX, gradYの自動アニメーション
   const [autoAnimTick, setAutoAnimTick] = useState(0)
@@ -205,7 +207,7 @@ const LiquidIntelligenceElement: React.FC = () => {
       <div
         className="absolute inset-0 animate-subtle-breathing-scale pointer-events-none"
         style={{
-          background: `radial-gradient(circle at ${gradX}% ${gradY}%, ${belowHero ? "rgba(59,130,246,0.28)" : "rgba(255,217,102,0.25)"} 0%, ${belowHero ? "rgba(59,130,246,0.12)" : "rgba(255,217,102,0.1)"} 40%, transparent 75%)`,
+          background: `radial-gradient(circle at ${gradX}% ${gradY}%, ${belowHero ? "rgba(255,255,255,1)" : "rgba(255,235,59,0.2)"} 0%, ${belowHero ? "rgba(255,255,255,0.5)" : "rgba(255,235,59,0.08)"} 40%, transparent 75%)`,
           opacity: 0.8,
           transition: "background-position 0.05s linear",
           zIndex: 0,
@@ -303,7 +305,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <Section id="services" className="bg-white/40">
+        <Section id="services" className="bg-gray-100/40">
           <SectionTitle>Services</SectionTitle>
           <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-stretch">
             <InteractiveCard className="bg-gray-50/30 p-8 rounded-lg shadow-sm hover:shadow-xl transition-shadow flex flex-col h-full">
@@ -321,7 +323,7 @@ export default function HomePage() {
           </div>
         </Section>
 
-        <Section id="vision" className="bg-gray-50/40">
+        <Section id="vision" className="bg-gray-100/40">
           <SectionTitle>Our Purpose</SectionTitle>
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
@@ -330,7 +332,7 @@ export default function HomePage() {
           </div>
         </Section>
 
-        <Section id="company" className="bg-white/40">
+        <Section id="company" className="bg-gray-100/40">
           <SectionTitle>Company Profile</SectionTitle>
           <div className="max-w-2xl mx-auto">
             <InteractiveCard className="bg-white/30 p-8 md:p-10 rounded-lg shadow-sm border border-gray-200/20 hover:shadow-xl transition-shadow">
