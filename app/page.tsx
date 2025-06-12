@@ -230,7 +230,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center">
             <Image
-              src={`${process.env.NODE_ENV === 'production' ? '/Lab-K9-corporate-page' : ''}/images/logo.png`}
+              src="/images/logo.png"
               alt="Lab K9 Logo"
               width={128}
               height={32}

@@ -11,9 +11,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // GitHub Pagesサブディレクトリ用の設定
-  basePath: process.env.NODE_ENV === 'production' ? '/Lab-K9-corporate-page' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/Lab-K9-corporate-page/' : '',
+  // 独自ドメイン使用時はbasePathとassetPrefixは不要
+  // basePath: process.env.NODE_ENV === 'production' ? '/Lab-K9-corporate-page' : '',
+  // assetPrefix: process.env.NODE_ENV === 'production' ? '/Lab-K9-corporate-page/' : '',
 }
 
 export default nextConfig
