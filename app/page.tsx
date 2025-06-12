@@ -45,7 +45,7 @@ const LiquidIntelligenceElement: React.FC = () => {
   const [isMounted, setIsMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 })
-  const [mouseClientY, setMouseClientY] = useState<number>(window.innerHeight / 2)
+  const [mouseClientY, setMouseClientY] = useState<number>(typeof window !== "undefined" ? window.innerHeight / 2 : 0)
   const [belowHero, setBelowHero] = useState(false)
   const [orientation, setOrientation] = useState({ beta: 90, gamma: 0 })
 
