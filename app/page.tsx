@@ -254,7 +254,9 @@ export default function HomePage() {
             <h1
               className={`text-balance text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-tight text-gray-900 ${heroTextDistorted ? "animate-text-distort" : ""}`}
             >
-              テクノロジーとビジネスの力で、
+              テクノロジーと
+              <br className="block md:hidden" />
+              ビジネスの力で、
               <br />
               しあわせをつくる。
             </h1>
@@ -290,7 +292,7 @@ export default function HomePage() {
           <SectionTitle>Our Purpose</SectionTitle>
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-              テクノロジーと経営マネジメントのかけ合わせで、はたらく人の幸福度をあげる。私たちは、テクノロジーがもたらす変化を、真の豊かさへと繋げることを使命とします。事業の効率化の先にある、人々の創造性と幸福度の向上に貢献します。
+              テクノロジーと経営マネジメントのかけ合わせで、はたらく人の幸福度をあげる。テクノロジーとデザインのかけ合わせで、人のくらしの幸福度をあげる。私たちは、テクノロジーがもたらす変化を、真の豊かさへと繋げることを使命とします。事業の効率化の先にある、人々の創造性と幸福度の向上に貢献します。
             </p>
           </div>
         </Section>
