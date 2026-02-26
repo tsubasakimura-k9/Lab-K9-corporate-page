@@ -11,9 +11,9 @@ export function CasesSection() {
           {cases.map((c) => (
             <div
               key={c.tag}
-              className="bg-card p-6 rounded-lg border border-border/50"
+              className="card-refined p-6 md:p-8 hover:-translate-y-0.5 transition-all duration-500 ease-out"
             >
-              <span className="inline-block text-xs font-medium text-accent-foreground bg-accent/15 px-3 py-1 rounded-full mb-3">
+              <span className="inline-block text-[11px] font-medium text-accent tracking-widest uppercase border-b border-accent/40 pb-0.5 mb-3">
                 {c.tag}
               </span>
               <p className="text-foreground font-medium mb-1">{c.summary}</p>
@@ -26,12 +26,15 @@ export function CasesSection() {
           <p className="text-sm text-muted-foreground text-center mb-6">
             主な取引先・パートナー
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
-            {clients.map((client) => (
+          <div className="flex flex-wrap items-center justify-center">
+            {clients.map((client, i) => (
               <span
                 key={client}
-                className="text-sm text-muted-foreground/80 whitespace-nowrap"
+                className="flex items-center text-sm text-muted-foreground/80 whitespace-nowrap"
               >
+                {i > 0 && (
+                  <span className="mx-3 text-foreground/20" aria-hidden="true">|</span>
+                )}
                 {client}
               </span>
             ))}

@@ -3,16 +3,20 @@ import { SectionTitle } from "./section-title"
 
 export function CompanySection() {
   return (
-    <section id="company" className="py-20 md:py-28">
+    <section id="company" className="py-24 md:py-32">
       <div className="container">
         <SectionTitle>Company</SectionTitle>
         <div className="max-w-2xl mx-auto">
-          <div className="bg-card p-8 md:p-10 rounded-lg border border-border/50">
-            <dl className="space-y-6">
-              {companyInfo.map((item) => (
+          <div className="card-refined p-8 md:p-12">
+            <dl>
+              {companyInfo.map((item, i) => (
                 <div
                   key={item.label}
-                  className="flex flex-col sm:flex-row gap-1 sm:gap-0"
+                  className={`flex flex-col sm:flex-row gap-1 sm:gap-0 pb-6 ${
+                    i < companyInfo.length - 1
+                      ? "border-b border-border/30 mb-6"
+                      : ""
+                  }`}
                 >
                   <dt className="w-full sm:w-1/3 font-medium text-foreground text-sm">
                     {item.label}
