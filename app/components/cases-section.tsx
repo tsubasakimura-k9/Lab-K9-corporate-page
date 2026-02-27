@@ -39,6 +39,9 @@ export function CasesSection() {
               </span>
             ))}
           </div>
+          <p className="text-xs text-muted-foreground/60 text-center mt-4">
+            ※ 代理店・パートナー企業経由でのお取引先を含みます
+          </p>
         </div>
       </div>
     </section>
